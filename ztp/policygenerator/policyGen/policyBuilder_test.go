@@ -1532,7 +1532,7 @@ spec:
     - fileName: GenericSecret.yaml
       policyName: "gen-policy"
       stringData:
-        key: value
+        stringkey: stringvalue
 `
 	// Read in the test PGT
 	pgt := utils.PolicyGenTemplate{}
@@ -1548,4 +1548,13 @@ spec:
 	// Validate the run
 	assert.Nil(t, err)
 	assert.NotNil(t, policies)
+
+	assert.Contains(t, policies, "test/test-gen-policy")
+	assert.IsType(t, utils.AcmPolicy{}, policies["test/test-gen-policy"])
+	policy := policies["test/test-gen-policy"].(utils.AcmPolicy)
+	assert.Contains(t, policy.Spec.PolicyTemplates[0].ObjDef.Spec.ObjectTemplates[0].ObjectDefinition, "stringData")
+	assert.IsType(t, map[string]interface{}{}, policy.Spec.PolicyTemplates[0].ObjDef.Spec.ObjectTemplates[0].ObjectDefinition["stringData"])
+	stringData := policy.Spec.PolicyTemplates[0].ObjDef.Spec.ObjectTemplates[0].ObjectDefinition["stringData"].(map[string]interface{})
+	assert.Contains(t, stringData, "stringkey")
+	assert.Equal(t, "stringvalue", stringData["stringkey"])
 }
